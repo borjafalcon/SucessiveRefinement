@@ -7,9 +7,9 @@ public class ArgsBoolean {
     private String schema;
     private String[] args;
     private boolean valid;
-    private Set<Character> unexpectedArguments = new TreeSet<Character>();
-    private Map<Character, Boolean> booleanArgs =
-            new HashMap<Character, Boolean>();
+    private Set<Character> unexpectedArguments = new TreeSet<>();
+    private Map<Character, Boolean> booleanArgs = new HashMap<>();
+    private Map<Character, String> stringArgs = new HashMap<>();
     private int numberOfArguments = 0;
 
     public ArgsBoolean(String schema, String[] args) {
@@ -27,7 +27,7 @@ public class ArgsBoolean {
             return true;
         parseSchema();
         parseArguments();
-        return unexpectedArguments.size() == 0;
+        return unexpectedArguments.isEmpty();
     }
 
     private boolean parseSchema() {
@@ -40,6 +40,8 @@ public class ArgsBoolean {
     private void parseSchemaElement(String element) {
         if (element.length() == 1) {
             parseBooleanSchemaElement(element);
+        } else if (element.contains("*")) {
+            parseStringSchemaElement(element);
         }
     }
 
@@ -47,6 +49,13 @@ public class ArgsBoolean {
         char c = element.charAt(0);
         if (Character.isLetter(c)) {
             booleanArgs.put(c, false);
+        }
+    }
+
+    private void parseStringSchemaElement(String element) {
+        char c = element.charAt(0);
+        if (args[0].charAt(1) == c) {
+            stringArgs.put(c, args[1]);
         }
     }
 
@@ -67,7 +76,7 @@ public class ArgsBoolean {
     }
 
     private void parseElement(char argChar) {
-        if (isBoolean(argChar)) {
+        if (isBoolean(argChar) || getString(argChar) != null) {
             numberOfArguments++;
             setBooleanArg(argChar, true);
         } else
@@ -80,6 +89,10 @@ public class ArgsBoolean {
 
     private boolean isBoolean(char argChar) {
         return booleanArgs.containsKey(argChar);
+    }
+
+    private void setStringArgs(char argChar, String value) {
+        stringArgs.put(argChar, value);
     }
 
     public int cardinality() {
@@ -111,6 +124,10 @@ public class ArgsBoolean {
 
     public boolean getBoolean(char arg) {
         return booleanArgs.get(arg);
+    }
+
+    public String getString(char arg) {
+        return stringArgs.get(arg);
     }
 }
 
